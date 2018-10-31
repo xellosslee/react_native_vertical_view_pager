@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-const SCROLL_THRESHOLD = 0.2;
+const SCROLL_THRESHOLD = 0.1;
 
 /**
  * VerticalViewPager
@@ -25,72 +25,45 @@ class VerticalViewPager extends Component {
     this._enableScrollTimer = null;
     this._layout = null;
     this._contentOffset = null;
-    this._currentOffset = null;
-  }
-
-  onScroll(e) {
-    this._currentOffset = e;
-    console.log(`onScroll ${e}`);
   }
 
   onScrollBeginDrag(e) {
     // record starting points
-    this._startContentOffset = e;
+    this._startContentOffset = e.nativeEvent.contentOffset;
     _.invoke(this.props, "onScrollBeginDrag", e);
   }
   
   onScrollEndDrag(e) {
     // calculate the offset the user scrolls
-    this._movePosition();
+    this._movePosition(e.nativeEvent.contentOffset);
     _.invoke(this.props, 'onScrollEndDrag', e);
   }
 
-  scrollTo({ y, animated }) {
-    this.scrollview.scrollToOffset({ offset: y, animated });
+  scrollTo({ x, y, animated }) {
+    this.scrollview.scrollTo({ x, y, animated });
     this._contentOffset = { x: 0, y };
   }
 
-  _movePosition() {
+  _movePosition(curOffset) {
     const {height} = this._layout;
-    const {y: positionY} = this._currentOffset;
+    const {y: positionY} = curOffset;
     const {y: startY} = this._startContentOffset;
     const pageIdx = Math.round(positionY / height) <= 0 ? 0 : Math.round(positionY / height); // current page
+    console.log(`layout height ${height} positionY ${positionY} math ${Math.round(positionY / height)} pageIdx ${pageIdx}`);
 
     // Swipe up
     if (startY > positionY && (pageIdx * height) - positionY > height * SCROLL_THRESHOLD) {
-      this.scrollTo((pageIdx - 1) * height);
       console.log(`Scroll Up ${(pageIdx - 1) * height}`);
+      this.scrollTo({y: (pageIdx - 1) * height, animated: true});
     }
     // Swipe down
     else if (startY < positionY && positionY - (pageIdx * height) > height * SCROLL_THRESHOLD) {
-      this.scrollTo((pageIdx + 1) * height);
       console.log(`Scroll Down ${(pageIdx + 1) * height}`);
+      this.scrollTo({y: (pageIdx + 1) * height, animated: true});
     }
     else {
-      this.scrollTo(pageIdx * height); // Rollback before position
       console.log(`Scroll Rollback ${pageIdx * height}`);
-    }
-  }
-
-  _testPosition(a, b) {
-    const height = 1000;
-    const positionY = a;
-    const startY = b;
-    const pageIdx = Math.round(positionY / height) <= 0 ? 0 : Math.round(positionY / height); // current page
-
-    // Swipe up
-    if (startY > positionY && (pageIdx * height) - positionY > height * 0.2) {
-      // this.scrollTo(((pageIdx - 1) * height));
-      console.log("scrollTo Up " + ((pageIdx - 1) * height));
-    }
-    // Swipe down
-    else if (startY < positionY && positionY - (pageIdx * height) > height * 0.2) {
-      // this.scrollTo(((pageIdx + 1) * height));
-      console.log("scrollTo Down " + ((pageIdx + 1) * height));
-    }
-    else {
-      // this.scrollTo((pageIdx * height)); // Rollback before position
-      console.log("scrollTo Rollback " + (pageIdx * height));
+      this.scrollTo({y: pageIdx * height, animated: true}); // Rollback before position
     }
   }
 
@@ -99,10 +72,7 @@ class VerticalViewPager extends Component {
   }
 
   _onLayout(e) {
-    this._layout = {
-      ...e.nativeEvent.layout,
-      height: e.nativeEvent.layout.height + STATUSBAR_HEIGHT
-    };
+    this._layout = e.nativeEvent.layout;
   }
 
   onMomentumScrollEnd(e) {
@@ -125,7 +95,6 @@ class VerticalViewPager extends Component {
         horizontal={false}
         style={style}
         scrollEnabled={true}
-        onScroll={e => this.onScroll(e)}
         onScrollBeginDrag={e => this.onScrollBeginDrag(e)}
         onScrollEndDrag={e => this.onScrollEndDrag(e)}
         onMomentumScrollEnd={e => this.onMomentumScrollEnd(e)}
