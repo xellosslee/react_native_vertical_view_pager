@@ -30,11 +30,12 @@ class VerticalViewPager extends Component {
 
   onScroll(e) {
     this._currentOffset = e;
+    console.log(`onScroll ${e}`);
   }
 
   onScrollBeginDrag(e) {
     // record starting points
-    this._startContentOffset = startOffset;
+    this._startContentOffset = e;
     _.invoke(this.props, "onScrollBeginDrag", e);
   }
   
@@ -57,14 +58,39 @@ class VerticalViewPager extends Component {
 
     // Swipe up
     if (startY > positionY && (pageIdx * height) - positionY > height * SCROLL_THRESHOLD) {
-      this.scrollTo(((pageIdx - 1) * height));
+      this.scrollTo((pageIdx - 1) * height);
+      console.log(`Scroll Up ${(pageIdx - 1) * height}`);
     }
     // Swipe down
     else if (startY < positionY && positionY - (pageIdx * height) > height * SCROLL_THRESHOLD) {
-      this.scrollTo(((pageIdx + 1) * height));
+      this.scrollTo((pageIdx + 1) * height);
+      console.log(`Scroll Down ${(pageIdx + 1) * height}`);
     }
     else {
-      this.scrollTo((pageIdx * height)); // Rollback before position
+      this.scrollTo(pageIdx * height); // Rollback before position
+      console.log(`Scroll Rollback ${pageIdx * height}`);
+    }
+  }
+
+  _testPosition(a, b) {
+    const height = 1000;
+    const positionY = a;
+    const startY = b;
+    const pageIdx = Math.round(positionY / height) <= 0 ? 0 : Math.round(positionY / height); // current page
+
+    // Swipe up
+    if (startY > positionY && (pageIdx * height) - positionY > height * 0.2) {
+      // this.scrollTo(((pageIdx - 1) * height));
+      console.log("scrollTo Up " + ((pageIdx - 1) * height));
+    }
+    // Swipe down
+    else if (startY < positionY && positionY - (pageIdx * height) > height * 0.2) {
+      // this.scrollTo(((pageIdx + 1) * height));
+      console.log("scrollTo Down " + ((pageIdx + 1) * height));
+    }
+    else {
+      // this.scrollTo((pageIdx * height)); // Rollback before position
+      console.log("scrollTo Rollback " + (pageIdx * height));
     }
   }
 
