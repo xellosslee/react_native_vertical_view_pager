@@ -40,3 +40,7 @@ const styles = StyleSheet.create({
 ```
 ## Properties
 Properties of [ScrollView](https://facebook.github.io/react-native/docs/scrollview.html) should work.
+
+## Fork 따서 변경하게 된 이유
+기존 버전에서는 스크롤 도중에 터치로 잡는 경우 여러가지 문제가 발생할수 있기 때문에
+터치 Release 될때마다 문제없이 지정된 위치로 페이징 되도록 작동 방식을 변경
